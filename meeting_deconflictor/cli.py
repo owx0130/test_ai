@@ -60,7 +60,10 @@ def main(argv: list[str] | None = None) -> int:
         else FixtureExtractor(args.fixture or _default_fixture(args.input))
     )
 
-    print(render(run_pipeline(load_run(args.input), backend)), end="")
+    # The run goes to the renderer too: it is the only place the attendee roster
+    # exists, and without it the free-count has no denominator to report.
+    run = load_run(args.input)
+    print(render(run_pipeline(run, backend), run), end="")
     return 0
 
 
