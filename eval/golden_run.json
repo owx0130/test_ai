@@ -1,0 +1,10 @@
+{
+  "_name": "Golden set run parameters",
+  "_note": "The messages themselves live in eval/golden.jsonl, one labelled message per line. This file is only the run context those labels were computed against: change today or window_business_days and every resolved-date label in golden.jsonl becomes wrong.",
+  "_window": "10 business days = Mon 17 Aug - Fri 21 Aug and Mon 24 Aug - Fri 28 Aug 2026.",
+  "today": "2026-08-17",
+  "window_business_days": 10,
+  "duration_minutes": 60,
+  "required": ["Wei", "Aisyah"],
+  "optional": ["Ravi", "Priya", "Sam"]
+}

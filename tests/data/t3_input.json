@@ -1,0 +1,18 @@
+{
+  "_name": "T3 -- no block where both required attendees are free, plus one calendar-relative message",
+  "_must_produce": "States no clean slot exists, names the nearest option and exactly whose conflict it breaks, flags the unresolvable message.",
+  "_hand_computed_answer": "No clean slot. The window is two business days: Wei is out all Mon 17 Aug and Aisyah is out all Tue 18 Aug, so no 60-minute block has both required attendees free. The nearest option is Mon 17 Aug 09:00-10:00, which breaks Wei's conflict and only Wei's. Ravi's message refers to a review that has not been scheduled, so it is flagged rather than guessed.",
+  "expected_top_slot": { "start": "2026-08-17T09:00:00", "end": "2026-08-17T10:00:00" },
+  "expected_top_slot_breaks": ["Wei"],
+  "expected_unresolved_speakers": ["Ravi"],
+  "today": "2026-08-17",
+  "window_business_days": 2,
+  "duration_minutes": 60,
+  "required": ["Wei", "Aisyah"],
+  "optional": ["Ravi"],
+  "messages": [
+    { "speaker": "Wei", "text": "I'm out all day Monday" },
+    { "speaker": "Aisyah", "text": "I'm out all day Tuesday" },
+    { "speaker": "Ravi", "text": "I'll know once the sprint review is scheduled" }
+  ]
+}
