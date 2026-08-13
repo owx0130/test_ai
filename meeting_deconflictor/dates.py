@@ -16,7 +16,7 @@ Nothing in this module calls a model, reads the network, or consults the clock.
 ``each Tuesday``             every Tuesday in the window
 ``Thu 20th`` / ``the 21st``  one dated business day
 ``Mon 24 Aug``               one dated business day, month named
-``Wednesday``               the *next* Wednesday on or after today
+``Wednesday``                the *next* Wednesday on or after today
 ``next Monday``              the Monday of the following week
 ``till the 21st``            today through that date, inclusive
 ``20th to 25th``             a dated range, inclusive

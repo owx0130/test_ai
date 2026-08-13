@@ -15,7 +15,7 @@ So a 10-business-day window from Mon 17 Aug is
 
 from __future__ import annotations
 
-from datetime import date, datetime, time
+from datetime import date, time
 
 import pytest
 
