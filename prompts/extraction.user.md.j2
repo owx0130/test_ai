@@ -1,0 +1,13 @@
+Today is {{ today_long }}.
+
+Required attendees: {{ required|join(", ") or "(none specified)" }}
+Optional attendees: {{ optional|join(", ") or "(none specified)" }}
+Meeting length: {{ duration_minutes }} minutes
+Window under consideration: the next {{ window_business_days }} business day{{ "" if window_business_days == 1 else "s" }}
+
+The thread:
+
+{% for m in messages -%}
+{{ loop.index }}. {{ m.speaker }}: {{ m.text }}
+{% endfor %}
+Extract every availability statement above.

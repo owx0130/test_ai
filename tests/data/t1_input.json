@@ -1,0 +1,16 @@
+{
+  "_name": "T1 -- 5 clean messages, one obvious gap",
+  "_hand_computed_answer": "Mon 17 Aug 2026, 10:00-11:00. Wei is free only 10:00-11:00; Aisyah is free 09:00-11:00; the single 60-minute overlap is 10:00-11:00. Ravi (free 10:00-18:00) and Priya (free 09:00-11:00) are both free then, so all four attend. Nothing is unresolvable.",
+  "today": "2026-08-17",
+  "window_business_days": 1,
+  "duration_minutes": 60,
+  "required": ["Wei", "Aisyah"],
+  "optional": ["Ravi", "Priya"],
+  "messages": [
+    { "speaker": "Wei", "text": "I'm booked Monday 9am to 10am" },
+    { "speaker": "Wei", "text": "and I'm in a workshop Monday 11am to 6pm" },
+    { "speaker": "Aisyah", "text": "I have a client call Monday 11am to 6pm" },
+    { "speaker": "Ravi", "text": "I'm in interviews Monday 9am to 10am" },
+    { "speaker": "Priya", "text": "I'm at an offsite Monday 11am to 6pm" }
+  ]
+}
