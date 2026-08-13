@@ -16,6 +16,7 @@ failure modes without adding capability.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -42,6 +43,21 @@ ENV_API_KEY = "OPENAI_KEY"
 def load_env() -> None:
     """Load ``.env`` from the project root if present. Never overrides a real env var."""
     load_dotenv(PROMPT_DIR.parent / ".env", override=False)
+
+
+def prompt_fingerprint() -> str:
+    """A short hash of the two prompt files.
+
+    Recorded into every fixture so a later run can tell whether the prompt has
+    moved underneath it. Tuning the prompt changes what the model emits, which
+    silently invalidates fixtures recorded under the old one -- the hazard
+    TEAM_PLAN.md flags between F5 and F6. Storing this turns "silently" into a
+    warning.
+    """
+    digest = hashlib.sha256()
+    for name in ("extraction.system.md", "extraction.user.md.j2"):
+        digest.update((PROMPT_DIR / name).read_bytes())
+    return digest.hexdigest()[:12]
 
 
 class ExtractionError(RuntimeError):
@@ -87,6 +103,11 @@ class FixtureExtractor:
         """Where this fixture came from. ``hand-authored`` is a known limit."""
         data = json.loads(self.path.read_text(encoding="utf-8"))
         return data.get("_source", "unknown")
+
+    def recorded_fingerprint(self) -> str | None:
+        """The prompt this was recorded under, or ``None`` if it predates the stamp."""
+        data = json.loads(self.path.read_text(encoding="utf-8"))
+        return data.get("_prompt_sha256")
 
     def __call__(self, system: str, user: str) -> str:  # noqa: ARG002 - protocol shape
         data = json.loads(self.path.read_text(encoding="utf-8"))

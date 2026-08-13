@@ -1,0 +1,160 @@
+{
+  "_source": "hand-authored",
+  "_model": null,
+  "_base_url": null,
+  "_response_format": null,
+  "_input": "eval/golden.jsonl",
+  "_warning": "NOT recorded from the gateway. OPENAI_KEY was unavailable when the golden set was written, so this is what a correct extraction of eval/golden.jsonl looks like, transcribed by hand. Scoring it against eval/golden.jsonl therefore measures the harness and the deterministic stages (provenance, dates, schedule, verify) -- NOT the model. The speaker/polarity/hardness metric is circular until this file is re-recorded with scripts/record_fixture.py. run_eval.py prints this caveat on every run and --require-recorded turns it into a failure.",
+  "conflicts": [
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "every morning",
+      "time_start": null,
+      "time_end": "10:00",
+      "hardness": "hard",
+      "quote": "standups every morning till 10",
+      "unparseable": false
+    },
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "Thu 20th",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "also I'm out Thu 20th",
+      "unparseable": false
+    },
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "Sat 22nd",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "I'm at a wedding Sat 22nd",
+      "unparseable": false
+    },
+    {
+      "speaker": "Aisyah",
+      "polarity": "busy",
+      "day_reference": "Wed afternoon",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "client call Wed afternoon",
+      "unparseable": false
+    },
+    {
+      "speaker": "Aisyah",
+      "polarity": "busy",
+      "day_reference": "lunch hour every day",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "soft",
+      "quote": "please avoid the lunch hour every day",
+      "unparseable": false
+    },
+    {
+      "speaker": "Aisyah",
+      "polarity": "free",
+      "day_reference": "all day Friday",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "soft",
+      "quote": "I'm free all day Friday",
+      "unparseable": false
+    },
+    {
+      "speaker": "Ravi",
+      "polarity": "busy",
+      "day_reference": "till the 21st",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "on leave till the 21st",
+      "unparseable": false
+    },
+    {
+      "speaker": "Ravi",
+      "polarity": "busy",
+      "day_reference": "Tue 25 Aug",
+      "time_start": "14:00",
+      "time_end": "15:00",
+      "hardness": "hard",
+      "quote": "dentist appointment Tue 25 Aug, 2pm to 3pm",
+      "unparseable": false
+    },
+    {
+      "speaker": "Ravi",
+      "polarity": "busy",
+      "day_reference": "once the audit kicks off",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "I'm blocked out once the audit kicks off",
+      "unparseable": true
+    },
+    {
+      "speaker": "Priya",
+      "polarity": "free",
+      "day_reference": "after the sprint review",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "soft",
+      "quote": "any time after the sprint review",
+      "unparseable": true
+    },
+    {
+      "speaker": "Priya",
+      "polarity": "busy",
+      "day_reference": "each Tuesday",
+      "time_start": "14:00",
+      "time_end": "17:00",
+      "hardness": "hard",
+      "quote": "workshops each Tuesday, 2pm to 5pm",
+      "unparseable": false
+    },
+    {
+      "speaker": "Priya",
+      "polarity": "busy",
+      "day_reference": "Mon 24 Aug",
+      "time_start": "09:00",
+      "time_end": "12:00",
+      "hardness": "hard",
+      "quote": "blocked Mon 24 Aug, 9am to 12pm",
+      "unparseable": false
+    },
+    {
+      "speaker": "Sam",
+      "polarity": "busy",
+      "day_reference": "26th to 28th",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "out of office 26th to 28th",
+      "unparseable": false
+    },
+    {
+      "speaker": "Sam",
+      "polarity": "busy",
+      "day_reference": "whenever they schedule it",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "away for the offsite, whenever they schedule it",
+      "unparseable": true
+    },
+    {
+      "speaker": "Sam",
+      "polarity": "busy",
+      "day_reference": "tomorrow",
+      "time_start": "11:00",
+      "time_end": "11:30",
+      "hardness": "hard",
+      "quote": "1:1 tomorrow, 11am to 11:30am",
+      "unparseable": false
+    }
+  ]
+}

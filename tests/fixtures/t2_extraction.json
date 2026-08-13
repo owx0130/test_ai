@@ -1,0 +1,70 @@
+{
+  "_source": "hand-authored",
+  "_model": null,
+  "_base_url": null,
+  "_response_format": null,
+  "_input": "tests/data/t2_input.json",
+  "_warning": "NOT recorded from the gateway -- OPENAI_KEY was unavailable. Re-record with scripts/record_fixture.py once a key exists; until then this shows what the hardened prompt asks the model to produce, not what it did produce.",
+  "conflicts": [
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "every morning",
+      "time_start": null,
+      "time_end": "10:00",
+      "hardness": "hard",
+      "quote": "standups every morning till 10",
+      "unparseable": false
+    },
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "Thu 20th",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "I'm out Thu 20th",
+      "unparseable": false
+    },
+    {
+      "speaker": "Aisyah",
+      "polarity": "busy",
+      "day_reference": "Wed afternoon",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "client call Wed afternoon",
+      "unparseable": false
+    },
+    {
+      "speaker": "Aisyah",
+      "polarity": "busy",
+      "day_reference": "lunch hour every day",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "soft",
+      "quote": "avoid lunch hour pls",
+      "unparseable": false
+    },
+    {
+      "speaker": "Ravi",
+      "polarity": "busy",
+      "day_reference": "till the 21st",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "on leave till the 21st",
+      "unparseable": false
+    },
+    {
+      "speaker": "Priya",
+      "polarity": "free",
+      "day_reference": "after the sprint review",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "soft",
+      "quote": "any time after the sprint review",
+      "unparseable": true
+    }
+  ]
+}

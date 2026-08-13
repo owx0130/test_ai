@@ -1,0 +1,15 @@
+{
+  "_what": "Scores from the last accepted run. Any metric below these is a regression, even when it still clears the PRD's absolute bar.",
+  "_how": "Refresh deliberately with --save-baseline once a change is reviewed and accepted; never to make a red run go green.",
+  "_scored_fixtures": {
+    "golden": "hand-authored",
+    "t1": "recorded",
+    "t2": "hand-authored",
+    "t3": "hand-authored"
+  },
+  "rates": {
+    "extraction": 1.0,
+    "resolution": 1.0,
+    "abstention": 1.0
+  }
+}

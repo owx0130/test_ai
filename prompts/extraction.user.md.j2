@@ -1,9 +1,20 @@
-Today is {{ today_long }}.
+Today is {{ today_long }}, and the window under consideration is the next
+{{ window_business_days }} business day{{ "" if window_business_days == 1 else "s" }}.
 
-Required attendees: {{ required|join(", ") or "(none specified)" }}
-Optional attendees: {{ optional|join(", ") or "(none specified)" }}
-Meeting length: {{ duration_minutes }} minutes
-Window under consideration: the next {{ window_business_days }} business day{{ "" if window_business_days == 1 else "s" }}
+That is context for reading the thread, not something to compute with. Do not
+turn it into dates: do not work out which day `the 21st` is, do not decide
+whether `Thursday` falls inside the window, do not drop a statement for landing
+outside it. Copy the day references as they were written and let code do the
+arithmetic.
+
+These people are being scheduled — use the list to spell their names the way
+the thread does, nothing else:
+
+- Required: {{ required|join(", ") or "(none specified)" }}
+- Optional: {{ optional|join(", ") or "(none specified)" }}
+
+The meeting needs {{ duration_minutes }} minutes, which is not your problem —
+finding a block that long is done in code, after you extract.
 
 The thread:
 

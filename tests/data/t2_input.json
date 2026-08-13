@@ -1,0 +1,18 @@
+{
+  "_name": "T2 -- recurring + dated conflicts, verbatim from the PRD's worked example",
+  "_must_produce": "Correct business dates; the recurring conflict applied to every day in the window, not just one.",
+  "_hand_computed_answer": "Mon 24 Aug 2026, 10:00-11:00. Wei's standup blocks 09:00-10:00 on all ten business days and Thu 20 Aug entirely; Ravi is on leave Mon 17 - Fri 21 Aug; Aisyah has Wed 19 Aug afternoon and a soft daily lunch. Mon 24 Aug is the first day both required attendees and two optional attendees are free, and 10:00 is the earliest hour on it that clears Wei's standup.",
+  "expected_top_slot": { "start": "2026-08-24T10:00:00", "end": "2026-08-24T11:00:00" },
+  "expected_unresolved_speakers": ["Priya"],
+  "today": "2026-08-17",
+  "window_business_days": 10,
+  "duration_minutes": 60,
+  "required": ["Wei", "Aisyah"],
+  "optional": ["Ravi", "Priya"],
+  "messages": [
+    { "speaker": "Wei", "text": "standups every morning till 10, and I'm out Thu 20th" },
+    { "speaker": "Aisyah", "text": "client call Wed afternoon, avoid lunch hour pls" },
+    { "speaker": "Ravi", "text": "on leave till the 21st" },
+    { "speaker": "Priya", "text": "any time after the sprint review" }
+  ]
+}

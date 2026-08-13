@@ -1,0 +1,40 @@
+{
+  "_source": "hand-authored",
+  "_model": null,
+  "_base_url": null,
+  "_response_format": null,
+  "_input": "tests/data/t3_input.json",
+  "_warning": "NOT recorded from the gateway -- OPENAI_KEY was unavailable. Re-record with scripts/record_fixture.py once a key exists.",
+  "conflicts": [
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "all day Monday",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "I'm out all day Monday",
+      "unparseable": false
+    },
+    {
+      "speaker": "Aisyah",
+      "polarity": "busy",
+      "day_reference": "all day Tuesday",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "I'm out all day Tuesday",
+      "unparseable": false
+    },
+    {
+      "speaker": "Ravi",
+      "polarity": "busy",
+      "day_reference": "once the sprint review is scheduled",
+      "time_start": null,
+      "time_end": null,
+      "hardness": "hard",
+      "quote": "I'll know once the sprint review is scheduled",
+      "unparseable": true
+    }
+  ]
+}

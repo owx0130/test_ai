@@ -17,7 +17,12 @@ import time
 from pathlib import Path
 
 from meeting_deconflictor.cli import load_run
-from meeting_deconflictor.extract import LiveExtractor, _unfence, build_prompts
+from meeting_deconflictor.extract import (
+    LiveExtractor,
+    _unfence,
+    build_prompts,
+    prompt_fingerprint,
+)
 from meeting_deconflictor.schema import Extraction
 
 
@@ -46,6 +51,7 @@ def main(argv: list[str]) -> int:
         "_response_format": (mode or {}).get("type", "none (unconstrained)"),
         "_input": str(input_path).replace("\\", "/"),
         "_elapsed_seconds": round(elapsed, 2),
+        "_prompt_sha256": prompt_fingerprint(),
         **extraction.model_dump(),
     }
     fixture_path.parent.mkdir(parents=True, exist_ok=True)
