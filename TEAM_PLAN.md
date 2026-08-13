@@ -18,7 +18,8 @@ Copied verbatim from `PRD.md`; every task's requirements implicitly include this
 
 - Single timezone. Business hours **Mon–Fri 09:00–18:00**. **30-minute** granularity. No calendar access. **Up to 25 messages** per run.
 - **Exactly one LLM call per run.** Extraction only — the model never resolves a date and never proposes a slot.
-- **Provider:** OpenAI-compatible client against `https://opencode.ai/zen/go/v1`, credential from `OPENAI_KEY`. Base URL and model ID are config values (`MD_BASE_URL`, `MD_MODEL`), never hardcoded in a call site.
+- **Provider:** OpenAI-compatible client against `https://opencode.ai/zen/go/v1`, credential from `OPENAI_KEY`. Base URL and model ID are config values (`OPENAI_BASE_URL`, `MODEL`), read from the environment or `.env`, never hardcoded in a call site.
+- **Measured, not assumed:** this gateway **rejects `json_schema`** and offers `json_object`. The schema is therefore enforced by our Pydantic validation, not by the provider. See `docs/evidence/technique-1.md`.
 - **Zero collisions.** No proposed slot overlaps any declared hard conflict, checked in code across the whole golden set.
 - **Zero invented conflicts.** Every extracted conflict traces to a verbatim quote in the input, and all of them appear in the echo block.
 - **Zero silent drops.** Anything unresolved appears in needs-confirmation. An unheard person is never treated as a free person.
@@ -78,7 +79,9 @@ Seven stages. Only stage 2 involves the model.
 
 **Where:** stage 2 only. `meeting_deconflictor/schema.py` (the Pydantic model → JSON schema), `meeting_deconflictor/extract.py` (the single `client.chat.completions.create(..., response_format={"type": "json_schema", "json_schema": {"name": "extraction", "strict": True, "schema": ...}})` call against the gateway), `prompts/extraction.system.md` and `prompts/extraction.user.md.j2`.
 
-**Provider caveat — must be probed in Task 1.** Strict `json_schema` response-format enforcement is a property of the gateway *and* the model behind it, not something we can assume. Task 1 Step 0 probes it. If the gateway enforces strict schema, Technique 1's guarantee is "the model structurally cannot emit an answer". If it only honours `json_schema` best-effort, the guarantee downgrades to "validate with Pydantic, one retry, then fail loudly" — still deterministic and still outside the model, but a materially weaker claim. **Whichever holds, the README states it plainly rather than overclaiming.**
+**PROBED — resolved.** The gateway **rejects `json_schema` outright** (`This response_format type is unavailable now`) and accepts `json_object`. Under `json_object` the model, when pushed, still emitted `recommended_slot` and `resolved_date`.
+
+So the claim is the narrower one: the provider guarantees valid JSON; **our Pydantic `extra="forbid"` validation is what enforces the schema**, and on this provider it is the only thing preventing an invented answer reaching stage 3. `extract.py` walks a ladder (`json_schema` → `json_object` → unconstrained), so a model that does support strict schema is picked up with no code change. Full transcript in `docs/evidence/technique-1.md`.
 
 **Why it is here and not elsewhere:** the schema is the mechanism that stops the model proposing an answer directly. There is no `recommended_slot` field, no `resolved_date` field, no free-text summary field. The model's only expressible output is per-message extraction.
 
@@ -160,9 +163,9 @@ Frozen at the end of Task 1. Every later feature owns a disjoint set.
 **Offline-first testing.** `OPENAI_KEY` will be supplied later, so `extract.py` exposes two backends behind one protocol:
 
 - `FixtureExtractor(path)` — replays a recorded extraction JSON. Every test and the whole eval run use this. **No network, no key, fully deterministic.**
-- `LiveExtractor(base_url, model, api_key)` — the real gateway call, used by `--live`, by `scripts/probe_provider.py`, and by `scripts/record_fixture.py`. Reads `MD_BASE_URL` (default `https://opencode.ai/zen/go/v1`), `MD_MODEL`, and `OPENAI_KEY` from the environment.
+- `LiveExtractor(base_url, model, api_key)` — the real gateway call, used by `--live`, by `scripts/probe_provider.py`, and by `scripts/record_fixture.py`. Reads `OPENAI_BASE_URL` (default `https://opencode.ai/zen/go/v1`), `MODEL`, and `OPENAI_KEY` from the environment or `.env` (`.env` is gitignored; it never overrides a real env var).
 
-Until the key arrives, fixtures are hand-authored to the schema so stages 3–7 are honestly tested; `scripts/record_fixture.py` then replaces them with real gateway output in one command.
+Fixtures carry their own provenance: `"_source": "recorded"` vs `"hand-authored"`, plus the model and response-format mode used. `FixtureExtractor` strips underscore-prefixed keys before validation, so a fixture can be self-documenting without loosening `extra="forbid"`.
 
 This is not a mock of our own logic — the fixtures are *real recorded model output*, so stages 3–7 are exercised against exactly what the model produces.
 
@@ -235,7 +238,7 @@ render(out: RunOutput) -> str                                               # re
 2. Does `response_format={"type":"json_schema", ..., "strict": True}` get accepted, or rejected as unsupported?
 3. When accepted, does it actually enforce — does a prompt deliberately pushing for an extra field get that field stripped, or passed through?
 
-Its output sets `MD_MODEL` and determines whether Technique 1's claim is "structurally cannot" or "validate-and-retry".
+Its output confirms `MODEL` and determines whether Technique 1's claim is "structurally cannot" or "validate-and-retry". **Run — see `docs/evidence/technique-1.md`: `json_schema` rejected, `json_object` in use, enforcement is ours.**
 
 - [ ] **Step 1: Project setup**
 
@@ -289,35 +292,33 @@ Expected: FAIL — `ModuleNotFoundError` / `NameError: run_pipeline`.
 - [ ] **Step 7: Write `extract.py`** — `Extractor` protocol, `FixtureExtractor`, and `LiveExtractor`:
 
 ```python
-client = OpenAI(base_url=os.environ.get("MD_BASE_URL", "https://opencode.ai/zen/go/v1"),
+client = OpenAI(base_url=os.environ.get("OPENAI_BASE_URL", DEFAULT_BASE_URL),
                 api_key=os.environ["OPENAI_KEY"])
+# Ladder, strongest first: json_schema -> json_object -> unconstrained.
+# Step down on BadRequestError; this gateway lands on json_object.
 resp = client.chat.completions.create(
-    model=os.environ["MD_MODEL"],
+    model=os.environ["MODEL"],
     messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-    response_format={"type": "json_schema",
-                     "json_schema": {"name": "extraction", "strict": True,
-                                     "schema": Extraction.model_json_schema()}},
+    response_format={"type": "json_object"},
 )
-return Extraction.model_validate_json(resp.choices[0].message.content)   # validate regardless
+return Extraction.model_validate_json(_unfence(resp.choices[0].message.content))
 ```
 
-The `model_validate_json` is **not** redundant with `strict` — it is the deterministic check that holds even if the gateway's enforcement is best-effort. One retry on `ValidationError`, then raise.
+The `model_validate_json` is **not** redundant — on this gateway it is the *only* schema enforcement, since `json_schema` is unavailable. One retry on `ValidationError`, then raise.
 
 - [ ] **Step 8: Write minimal `provenance.py`, `dates.py`, `schedule.py`, `verify.py`, `render.py`, `pipeline.py`** — only enough for T1: exact-date and simple time ranges; no recurrence yet (F1 adds it), simple linear scan for slots (F2 replaces it).
 
-- [ ] **Step 9: Produce the T1 fixture**
-
-Without `OPENAI_KEY` yet: hand-author `tests/fixtures/t1_extraction.json` to the schema. Mark it in-file with `"_source": "hand-authored"`.
-
-Once `OPENAI_KEY` is supplied, replace it with real gateway output in one command and re-run the suite:
+- [x] **Step 9: Produce the T1 fixture — DONE, recorded live**
 
 ```bash
-uv run python scripts/probe_provider.py          # sets MD_MODEL, records enforcement behaviour
+uv run python scripts/probe_provider.py          # confirms MODEL, records enforcement behaviour
 uv run python scripts/record_fixture.py tests/data/t1_input.json tests/fixtures/t1_extraction.json
 uv run pytest
 ```
 
-**A fixture still marked `hand-authored` when the README is written is a known limit that gets stated, not glossed.**
+`tests/fixtures/t1_extraction.json` now carries `"_source": "recorded"`, `"_model": "deepseek-v4-flash"`, `"_response_format": "json_object"`, `"_elapsed_seconds": 14.11`. The real model extracted all five statements correctly and the pipeline produced the hand-computed answer unchanged.
+
+**Any fixture still marked `hand-authored` when the README is written is a known limit that gets stated, not glossed.**
 
 - [ ] **Step 10: Run the test, confirm it passes**
 
@@ -463,17 +464,21 @@ Read this before assigning work.
 
 ---
 
-## Provider status and what it gates
+## Provider status — RESOLVED
 
-**Decided:** OpenAI-compatible client → `https://opencode.ai/zen/go/v1`, credential `OPENAI_KEY`, supplied later.
-
-| Blocked on the key | Not blocked |
+| | |
 |---|---|
-| `scripts/probe_provider.py` — model IDs, strict-schema support | Task 1 Steps 0–8, 10, 11 |
-| Recording real fixtures (`t1`, `t2`, `t3`, golden set) | F1, F2, F3, F4 in full — they never call the model |
-| F5 (prompt tuning) and the live half of F6 | F6's scorer, written against hand-authored fixtures |
-| Technique 1's enforcement claim + the free-text comparison | Techniques 2 and 3's evidence, on hand-authored fixtures |
+| Gateway | `https://opencode.ai/zen/go/v1` (`OPENAI_BASE_URL`) |
+| Model | `deepseek-v4-flash` (`MODEL`) |
+| Credential | `OPENAI_KEY`, loaded from gitignored `.env` |
+| `json_schema` strict | **rejected by the gateway** |
+| `json_object` | **supported** — the mode in use |
+| Schema enforcement | **our Pydantic validation**, not the provider |
+| T1 fixture | recorded from the live gateway, 14.1 s |
+| Full live pipeline | 9.5 s for 5 messages (budget: 30 s for 25) |
 
-Everything proceeds against hand-authored fixtures; the key converts them to real ones and unblocks F5. **Two things are stated as pending in the README until the key lands:** whether the gateway enforces strict schema, and whether the prompt actually elicits schema-conforming output from a real model.
+Nothing is blocked on credentials any more. F1–F4 remain fully parallel and still never call the model; F5 and F6 are now unblocked too.
 
-`MD_MODEL` is unset until the probe runs — I won't guess an opencode zen model ID.
+**Two things remain unmeasured** and are stated as such rather than assumed:
+- Timing at the full 25-message size (only 5 measured).
+- The controlled free-text A/B for Technique 1 — the probe's unconstrained rung is one suggestive sample, not an experiment.

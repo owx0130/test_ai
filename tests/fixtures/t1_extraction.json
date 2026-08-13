@@ -1,6 +1,10 @@
 {
-  "_source": "hand-authored",
-  "_why": "No OPENAI_KEY available yet. Re-record with scripts/record_fixture.py once one is supplied; until then the prompt itself is unproven and this is listed under README known limits.",
+  "_source": "recorded",
+  "_model": "deepseek-v4-flash",
+  "_base_url": "https://opencode.ai/zen/go/v1",
+  "_response_format": "json_object",
+  "_input": "tests/data/t1_input.json",
+  "_elapsed_seconds": 14.11,
   "conflicts": [
     {
       "speaker": "Wei",
@@ -9,7 +13,7 @@
       "time_start": "09:00",
       "time_end": "10:00",
       "hardness": "hard",
-      "quote": "booked Monday 9am to 10am",
+      "quote": "I'm booked Monday 9am to 10am",
       "unparseable": false
     },
     {
@@ -19,7 +23,7 @@
       "time_start": "11:00",
       "time_end": "18:00",
       "hardness": "hard",
-      "quote": "in a workshop Monday 11am to 6pm",
+      "quote": "and I'm in a workshop Monday 11am to 6pm",
       "unparseable": false
     },
     {
@@ -29,7 +33,7 @@
       "time_start": "11:00",
       "time_end": "18:00",
       "hardness": "hard",
-      "quote": "client call Monday 11am to 6pm",
+      "quote": "I have a client call Monday 11am to 6pm",
       "unparseable": false
     },
     {
@@ -39,7 +43,7 @@
       "time_start": "09:00",
       "time_end": "10:00",
       "hardness": "hard",
-      "quote": "in interviews Monday 9am to 10am",
+      "quote": "I'm in interviews Monday 9am to 10am",
       "unparseable": false
     },
     {
@@ -49,7 +53,7 @@
       "time_start": "11:00",
       "time_end": "18:00",
       "hardness": "hard",
-      "quote": "at an offsite Monday 11am to 6pm",
+      "quote": "I'm at an offsite Monday 11am to 6pm",
       "unparseable": false
     }
   ]

@@ -8,6 +8,30 @@ One entry per availability statement in the thread. A single message can contain
 several ("standups every morning till 10, and I'm out Thu 20th" is two). A
 message with no availability content produces no entry.
 
+Reply with json and nothing else: no prose before or after, no markdown fence.
+One object, one key `conflicts`, an array of entries with exactly these eight
+keys and no others:
+
+```json
+{
+  "conflicts": [
+    {
+      "speaker": "Wei",
+      "polarity": "busy",
+      "day_reference": "every morning",
+      "time_start": null,
+      "time_end": "10:00",
+      "hardness": "hard",
+      "quote": "standups every morning till 10",
+      "unparseable": false
+    }
+  ]
+}
+```
+
+Any key beyond those eight is rejected downstream and the whole reply is thrown
+away, so do not add one — no recommended slot, no resolved date, no notes field.
+
 ## Fields
 
 **speaker** — who said it, spelled as it appears in the thread.

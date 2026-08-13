@@ -21,6 +21,7 @@ import os
 from pathlib import Path
 from typing import Protocol
 
+from dotenv import load_dotenv
 from jinja2 import Template
 from pydantic import ValidationError
 
@@ -30,6 +31,17 @@ from meeting_deconflictor.schema import Extraction, extraction_json_schema
 PROMPT_DIR = Path(__file__).resolve().parent.parent / "prompts"
 
 DEFAULT_BASE_URL = "https://opencode.ai/zen/go/v1"
+
+#: Environment variables the live backend reads. Kept in one place so the
+#: provider is configuration, never a hardcoded call site.
+ENV_BASE_URL = "OPENAI_BASE_URL"
+ENV_MODEL = "MODEL"
+ENV_API_KEY = "OPENAI_KEY"
+
+
+def load_env() -> None:
+    """Load ``.env`` from the project root if present. Never overrides a real env var."""
+    load_dotenv(PROMPT_DIR.parent / ".env", override=False)
 
 
 class ExtractionError(RuntimeError):
@@ -84,8 +96,8 @@ class FixtureExtractor:
 class LiveExtractor:
     """Call the configured OpenAI-compatible gateway (opencode zen by default).
 
-    Reads ``MD_BASE_URL``, ``MD_MODEL`` and ``OPENAI_KEY`` from the environment
-    so the provider is never hardcoded at a call site.
+    Reads ``OPENAI_BASE_URL``, ``MODEL`` and ``OPENAI_KEY`` from the environment
+    (or ``.env``) so the provider is never hardcoded at a call site.
     """
 
     def __init__(
@@ -94,28 +106,30 @@ class LiveExtractor:
         model: str | None = None,
         api_key: str | None = None,
     ) -> None:
-        self.base_url = base_url or os.environ.get("MD_BASE_URL", DEFAULT_BASE_URL)
-        self.model = model or os.environ.get("MD_MODEL")
-        self.api_key = api_key or os.environ.get("OPENAI_KEY")
+        load_env()
+        self.base_url = base_url or os.environ.get(ENV_BASE_URL) or DEFAULT_BASE_URL
+        self.model = model or os.environ.get(ENV_MODEL)
+        self.api_key = api_key or os.environ.get(ENV_API_KEY)
         if not self.model:
             raise ExtractionError(
-                "MD_MODEL is not set. Run scripts/probe_provider.py to list the model "
-                "ids this gateway exposes -- do not guess one."
+                f"{ENV_MODEL} is not set. Run scripts/probe_provider.py to list the "
+                "model ids this gateway exposes -- do not guess one."
             )
         if not self.api_key:
-            raise ExtractionError("OPENAI_KEY is not set.")
+            raise ExtractionError(f"{ENV_API_KEY} is not set.")
+        #: Which rung of the ladder actually worked, recorded into fixtures.
+        self.used_response_format: dict | None = None
 
-    def __call__(self, system: str, user: str) -> str:
-        from openai import OpenAI
+    def _response_format_ladder(self) -> list[dict | None]:
+        """Constraint modes, strongest first.
 
-        client = OpenAI(base_url=self.base_url, api_key=self.api_key)
-        response = client.chat.completions.create(
-            model=self.model,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": user},
-            ],
-            response_format={
+        Support varies by gateway, so we degrade rather than assume. Probed on
+        opencode zen (see docs/evidence/technique-1.md): ``json_schema`` is
+        rejected outright, ``json_object`` works. The last rung is no
+        constraint at all, which still leaves our own validation in place.
+        """
+        return [
+            {
                 "type": "json_schema",
                 "json_schema": {
                     "name": "extraction",
@@ -123,11 +137,53 @@ class LiveExtractor:
                     "schema": extraction_json_schema(),
                 },
             },
-        )
-        content = response.choices[0].message.content
-        if not content:
-            raise ExtractionError("provider returned an empty message")
-        return content
+            {"type": "json_object"},
+            None,
+        ]
+
+    def __call__(self, system: str, user: str) -> str:
+        from openai import BadRequestError, OpenAI
+
+        client = OpenAI(base_url=self.base_url, api_key=self.api_key)
+        messages = [
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ]
+
+        last_error: Exception | None = None
+        for response_format in self._response_format_ladder():
+            kwargs = {"response_format": response_format} if response_format else {}
+            try:
+                response = client.chat.completions.create(
+                    model=self.model, messages=messages, **kwargs
+                )
+            except BadRequestError as exc:
+                # This gateway does not offer this constraint mode. Step down.
+                last_error = exc
+                continue
+
+            self.used_response_format = response_format
+            content = response.choices[0].message.content
+            if not content:
+                raise ExtractionError("provider returned an empty message")
+            return content
+
+        raise ExtractionError(
+            f"no supported response format for model {self.model!r}: {last_error}"
+        ) from last_error
+
+
+def _unfence(raw: str) -> str:
+    """Strip a ``` fence if the model wrapped its JSON in one.
+
+    Needed because the constraint ladder can fall through to unconstrained
+    mode on gateways that offer no JSON mode at all.
+    """
+    text = raw.strip()
+    if not text.startswith("```"):
+        return text
+    body = text.split("\n", 1)[-1] if "\n" in text else ""
+    return body.rsplit("```", 1)[0].strip()
 
 
 def extract(run: RunInput, backend: Extractor) -> Extraction:
@@ -144,7 +200,7 @@ def extract(run: RunInput, backend: Extractor) -> Extraction:
     for _ in range(2):
         raw = backend(system, user)
         try:
-            return Extraction.model_validate_json(raw)
+            return Extraction.model_validate_json(_unfence(raw))
         except (ValidationError, json.JSONDecodeError) as exc:
             last_error = exc
 

@@ -5,7 +5,8 @@ downstream runs against exactly the shape the provider produces.
 
     uv run python scripts/record_fixture.py tests/data/t1_input.json tests/fixtures/t1_extraction.json
 
-Requires OPENAI_KEY and MD_MODEL (run scripts/probe_provider.py first).
+Reads OPENAI_KEY, OPENAI_BASE_URL and MODEL from the environment or .env
+(run scripts/probe_provider.py first to confirm the model id).
 """
 
 from __future__ import annotations
@@ -16,7 +17,7 @@ import time
 from pathlib import Path
 
 from meeting_deconflictor.cli import load_run
-from meeting_deconflictor.extract import LiveExtractor, build_prompts
+from meeting_deconflictor.extract import LiveExtractor, _unfence, build_prompts
 from meeting_deconflictor.schema import Extraction
 
 
@@ -35,12 +36,14 @@ def main(argv: list[str]) -> int:
     elapsed = time.monotonic() - started
 
     # Validate before writing -- never record a fixture we could not parse.
-    extraction = Extraction.model_validate_json(raw)
+    extraction = Extraction.model_validate_json(_unfence(raw))
 
+    mode = backend.used_response_format
     payload = {
         "_source": "recorded",
         "_model": backend.model,
         "_base_url": backend.base_url,
+        "_response_format": (mode or {}).get("type", "none (unconstrained)"),
         "_input": str(input_path).replace("\\", "/"),
         "_elapsed_seconds": round(elapsed, 2),
         **extraction.model_dump(),
